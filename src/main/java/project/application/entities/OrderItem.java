@@ -11,33 +11,33 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "orderItems")
+@Table(name = "order_items")
 public class OrderItem {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
     private Integer quantity;
     private BigDecimal price;
-    private BigDecimal subTotal;
+    
 
     public OrderItem(){}
 
-    public OrderItem(Order order, Product product, Integer quantity, BigDecimal price, BigDecimal subTotal) {
+    public OrderItem(Order order, Product product, Integer quantity, BigDecimal price) {
         this.order = order;
         this.product = product;
         this.quantity = quantity;
         this.price = price;
-        this.subTotal = subTotal;
+        
     }
 
     public Long getId() {
@@ -81,11 +81,10 @@ public class OrderItem {
     }
 
     public BigDecimal getSubTotal() {
-        return subTotal;
-    }
-
-    public void setSubTotal(BigDecimal subTotal) {
-        this.subTotal = subTotal;
+        if(price == null || quantity == null){
+            return BigDecimal.ZERO;
+        }
+        return price.multiply(BigDecimal.valueOf(quantity));
     }
 
     @Override

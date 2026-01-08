@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import project.application.entities.Product;
 import project.application.repository.ProductRepository;
@@ -15,6 +16,7 @@ public class ProductService {
     @Autowired
     private ProductRepository productRepository;
 
+    @Transactional
     public Product createProduct(String name, BigDecimal price){
         if(price.compareTo(BigDecimal.ZERO)<= 0){
             throw new IllegalArgumentException("Insira um valor valido");
@@ -35,13 +37,30 @@ public class ProductService {
         return productRepository.findAll();
     }
 
-    // public Product updateProduct(String name, BigDecimal price, Long id){
-    //     if(id == 0 || id == null){
-    //         throw new IllegalArgumentException("insira um id valido");
-    //     }
+    @Transactional
+    public Product updateProduct(String name, BigDecimal price, Long id){
+        if(id == null || id <= 0){
+            throw new IllegalArgumentException("insira um id valido");
+        }
+        if(price.compareTo(BigDecimal.ZERO)<= 0){
+            throw new IllegalArgumentException("Insira um valor valido");
+        }
+        Product product = productRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado"));
 
-    //     Product product = productRepository.findById(id)
-    //                 .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado"));
-    // }
+        product.setName(name);
+        product.setPrice(price);
+        return productRepository.save(product);
+    }
 
+    @Transactional
+    public void deleteProduct(Long id){
+        if(id == 0 || id == null){
+            throw new IllegalArgumentException("insira um id valido");
+        }
+        Product product = productRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado"));
+
+        productRepository.delete(product);
+    }
 }

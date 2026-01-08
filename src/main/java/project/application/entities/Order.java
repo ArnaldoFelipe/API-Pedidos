@@ -2,13 +2,18 @@ package project.application.entities;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 @Entity
@@ -22,15 +27,26 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
-    private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy =  "orders", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> Items = new ArrayList<>();
+
+    
+
     private String status;
     private BigDecimal total;
 
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    public void PrePersist(){
+        this.createdAt = LocalDateTime.now();
+    }
+
     public Order(){}
 
-    public Order(Customer customer, LocalDateTime createdAt, String status, BigDecimal total) {
+    public Order(Customer customer, String status, BigDecimal total) {
         this.customer = customer;
-        this.createdAt = createdAt;
         this.status = status;
         this.total = total;
     }
@@ -73,6 +89,14 @@ public class Order {
 
     public void setTotal(BigDecimal total) {
         this.total = total;
+    }
+
+    public List<OrderItem> getItems() {
+        return Items;
+    }
+
+    public void setItems(List<OrderItem> items) {
+        Items = items;
     }
 
     @Override
