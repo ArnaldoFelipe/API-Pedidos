@@ -7,6 +7,8 @@ import java.util.List;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -31,9 +33,9 @@ public class Order {
     @OneToMany(mappedBy =  "orders", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> Items = new ArrayList<>();
 
-    
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status;
 
-    private String status;
     private BigDecimal total;
 
     private LocalDateTime createdAt;
@@ -45,7 +47,7 @@ public class Order {
 
     public Order(){}
 
-    public Order(Customer customer, String status, BigDecimal total) {
+    public Order(Customer customer, OrderStatus status, BigDecimal total) {
         this.customer = customer;
         this.status = status;
         this.total = total;
@@ -75,11 +77,11 @@ public class Order {
         this.createdAt = createdAt;
     }
 
-    public String getStatus() {
+    public OrderStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(OrderStatus status) {
         this.status = status;
     }
 

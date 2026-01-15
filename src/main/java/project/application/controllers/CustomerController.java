@@ -3,6 +3,7 @@ package project.application.controllers;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,7 +14,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import project.application.entities.Customer;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import project.application.dto.customer.CustomerRequest;
+import project.application.dto.customer.CustomerResponse;
 import project.application.services.CustomerService;
 
 @RestController
@@ -23,35 +27,33 @@ public class CustomerController {
     @Autowired
     private CustomerService customerService;
 
-    @PostMapping("/created")
-    public ResponseEntity<Customer> createCustomer(@RequestBody Customer customer){
-        Customer vCustomer = customerService.createCustomer(customer.getName(), customer.getEmail());
-        return ResponseEntity.status(201).body(vCustomer);
+    @PostMapping
+    public ResponseEntity<CustomerResponse> createCustomer(@Valid @RequestBody CustomerRequest customer){
+        CustomerResponse vCustomer = customerService.createCustomer(customer);
+        return ResponseEntity.status(HttpStatus.CREATED).body(vCustomer);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Customer> findCustomerById(@PathVariable Long id){
-        Customer vCustomer =  customerService.findById(id);
-        return ResponseEntity.status(201).body(vCustomer);
+    public ResponseEntity<CustomerResponse> getCustomerById(@PathVariable @Positive Long id){
+        CustomerResponse customer = customerService.findById(id);
+        return ResponseEntity.ok(customer);
     }
 
-    @GetMapping("/list")
-    public ResponseEntity<List<Customer>> listAllCustomers(){
-        List<Customer> customers = customerService.listCustomers();
-        return ResponseEntity.status(200).body(customers);
+    @GetMapping
+    public ResponseEntity<List<CustomerResponse>> listCustomers(){
+        List<CustomerResponse> customers = customerService.listCustomers();
+        return ResponseEntity.ok(customers);
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<Customer> updateCustomer(@PathVariable Long id,@RequestBody Customer customer){
-        Customer vCustomer =  customerService.updateCustomer(id, customer.getName(), customer.getEmail());
-        return ResponseEntity.status(200).body(vCustomer);
-    
+    @PutMapping("/{id}")
+    public ResponseEntity<CustomerResponse> updateCustomer(@PathVariable @Positive Long id, @Valid @RequestBody CustomerRequest customerRequest){
+
+        CustomerResponse customer = customerService.updateCustomer(id, customerRequest);
+        return ResponseEntity.ok(customer);
     }
 
-    @DeleteMapping("/delete/{id}")
-    public String deleteCustomer(@PathVariable Long id){
+    @DeleteMapping("/{id}")
+    public void deleteCustomer(@PathVariable @Positive Long id){
         customerService.deleteCustomer(id);
-        return "Customer id: " + id + " deletado com sucesso";
     }
-
 }

@@ -3,6 +3,7 @@ package project.application.controllers;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,7 +14,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import project.application.entities.Product;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import project.application.dto.product.ProductRequest;
+import project.application.dto.product.ProductResponse;
 import project.application.services.ProductService;
 
 @RestController
@@ -24,34 +28,32 @@ public class ProductController {
     @Autowired
     private ProductService productService;
     
-    @PostMapping("/created")
-    public ResponseEntity<Product> createProduct(@RequestBody Product product){
-        Product vProduct = productService.createProduct(product.getName(), product.getPrice());
-        return ResponseEntity.status(201).body(vProduct);
+    @PostMapping
+    public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRequest productRequest){
+        ProductResponse vProduct = productService.createProduct(productRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(vProduct);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Product> findProductById(@PathVariable Long id){
-        Product vProduct =  productService.findById(id);
-        return ResponseEntity.status(201).body(vProduct);
+    public ResponseEntity<ProductResponse> getProductFindById(@PathVariable  @Positive Long id){
+        ProductResponse vProduct = productService.findById(id);
+        return ResponseEntity.ok(vProduct);
     }
 
-    @GetMapping("/list")
-    public ResponseEntity<List<Product>> listAllProducts(){
-        List<Product> products = productService.listProducts();
-        return ResponseEntity.status(200).body(products);
+    @GetMapping
+    public ResponseEntity<List<ProductResponse>> listProducts(){
+        List<ProductResponse> products = productService.listProducts();
+        return ResponseEntity.ok(products);
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id,@RequestBody Product product){
-        Product vProduct =  productService.updateProduct(product.getName(), product.getPrice(), id);
-        return ResponseEntity.status(200).body(vProduct);
-    
+    @PutMapping("/{id}")
+    public ResponseEntity<ProductResponse> updateProduct(@PathVariable  @Positive Long id, @RequestBody ProductRequest productRequest){
+        ProductResponse product = productService.updateProduct(id, productRequest);
+        return ResponseEntity.ok(product);
     }
 
-    @DeleteMapping("/delete/{id}")
-    public String deleteProduct(@PathVariable Long id){
+    @DeleteMapping("/{id}")
+    public void deleteProduct(@PathVariable @Positive Long id){
         productService.deleteProduct(id);
-        return "Product id: " + id + " deletado com sucesso";
     }
 }

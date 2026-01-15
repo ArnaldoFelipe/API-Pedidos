@@ -1,12 +1,15 @@
 package project.application.services;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
+import project.application.dto.product.ProductRequest;
+import project.application.dto.product.ProductResponse;
 import project.application.entities.Product;
 import project.application.repository.ProductRepository;
 
@@ -17,49 +20,54 @@ public class ProductService {
     private ProductRepository productRepository;
 
     @Transactional
-    public Product createProduct(String name, BigDecimal price){
-        if(price.compareTo(BigDecimal.ZERO)<= 0){
-            throw new IllegalArgumentException("Insira um valor valido");
-        }
-        Product product = new Product(name, price);
-        return productRepository.save(product);
+    public ProductResponse createProduct(ProductRequest request){
+        
+        Product product = new Product();
+        product.setName(request.name());
+        product.setPrice(request.price());
+
+        Product saved = productRepository.save(product);
+        return new ProductResponse(saved.getId(), saved.getName(), saved.getPrice());
     }
 
-    public Product findById(Long id){
-        if(id == null || id <=0){
-            throw new IllegalArgumentException("Insira um id valido");
-        }
-        return productRepository.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado"));
+    public ProductResponse findById(Long id){
+        
+        Product product = productRepository.findById(id)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Produto não encontrado"));
+
+        return new ProductResponse(
+            product.getId(),
+            product.getName(),
+            product.getPrice());
     }
 
-    public List<Product> listProducts(){
-        return productRepository.findAll();
+    public List<ProductResponse> listProducts(){
+        return productRepository.findAll().stream()
+            .map(p -> new ProductResponse(p.getId(), p.getName(), p.getPrice()))
+            .toList();
     }
 
     @Transactional
-    public Product updateProduct(String name, BigDecimal price, Long id){
-        if(id == null || id <= 0){
-            throw new IllegalArgumentException("insira um id valido");
-        }
-        if(price.compareTo(BigDecimal.ZERO)<= 0){
-            throw new IllegalArgumentException("Insira um valor valido");
-        }
+    public ProductResponse updateProduct(Long id, ProductRequest productRequest){
+        
         Product product = productRepository.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Produto não encontrado"));
 
-        product.setName(name);
-        product.setPrice(price);
-        return productRepository.save(product);
+        product.setName(productRequest.name());
+        product.setPrice(productRequest.price());
+
+        Product productUpdate = productRepository.save(product);
+
+        return new ProductResponse(
+            productUpdate.getId(),
+            productUpdate.getName(),
+            productUpdate.getPrice());
     }
 
     @Transactional
     public void deleteProduct(Long id){
-        if(id == 0 || id == null){
-            throw new IllegalArgumentException("insira um id valido");
-        }
         Product product = productRepository.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Produto não encontrado"));
 
         productRepository.delete(product);
     }
