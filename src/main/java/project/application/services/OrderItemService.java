@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import project.application.dto.orderItem.OrderItemRequest;
+import project.application.dto.orderItem.OrderItemResponse;
 import project.application.entities.Order;
 import project.application.entities.OrderItem;
 import project.application.entities.Product;
@@ -26,40 +28,38 @@ public class OrderItemService {
     private ProductRepository productRepository;
 
     @Transactional
-    public Order addItem(Long orderId, long productId, Integer quantity) {
+    public OrderItemResponse addItem(Long orderId, OrderItemRequest orderItemRequest) {
 
         if (orderId == null || orderId <= 0) {
             throw new IllegalArgumentException("Pedido inválido");
         }
 
-        if (productId <= 0) {
-            throw new IllegalArgumentException("Produto inválido");
-        }
-
-        if (quantity == null || quantity <= 0) {
-            throw new IllegalArgumentException("Quantidade inválida");
-        }
-
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado"));
 
-        Product product = productRepository.findById(productId)
+        Product product = productRepository.findById(orderItemRequest.productId())
                 .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado"));
 
         OrderItem orderItem = new OrderItem(
                 order,
                 product,
-                quantity,
+                orderItemRequest.quantity(),
                 product.getPrice());
 
         order.getItems().add(orderItem);
         recalcularTotal(order);
 
-        return order;
+        return new OrderItemResponse(
+            product.getId(),
+            product.getName(),
+            orderItem.getQuantity(),
+            orderItem.getPrice(),
+            orderItem.getSubTotal()
+        );
     }
 
     @Transactional
-    public Order removeItem(Long orderId, Long itemId) {
+    public OrderItemResponse removeItem(Long orderId, Long itemId) {
 
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado"));
@@ -71,10 +71,18 @@ public class OrderItemService {
             throw new IllegalArgumentException("Item não pertence a esse pedido");
         }
 
+        OrderItemResponse response = new OrderItemResponse(
+            item.getProduct().getId(),
+            item.getProduct().getName(),
+            item.getQuantity(),
+            item.getPrice(),
+            item.getSubTotal()
+        );
+
         order.getItems().remove(item);
         recalcularTotal(order);
 
-        return order;
+        return response;
     }
 
     private void recalcularTotal(Order order) {

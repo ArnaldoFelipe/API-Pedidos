@@ -30,7 +30,7 @@ public class Order {
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
-    @OneToMany(mappedBy =  "orders", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy =  "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> Items = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)

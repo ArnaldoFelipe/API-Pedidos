@@ -21,7 +21,7 @@ import project.application.dto.customer.CustomerResponse;
 import project.application.services.CustomerService;
 
 @RestController
-@RequestMapping("/Customers")
+@RequestMapping("/customers")
 public class CustomerController {
     
     @Autowired
