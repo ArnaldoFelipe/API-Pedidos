@@ -2,6 +2,7 @@ package project.application.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -61,6 +62,28 @@ public class OrderItemServiceTest {
 
         assertEquals(1, order.getItems().size());
         assertEquals(quantity, order.getItems().get(0).getQuantity());
+    }
+
+    @Test
+    void erroAoAdicionarItemComQuantidadeNegativa(){
+
+        Long orderId = 1L;
+        Long productId = 1L;
+        int quantity = -5;
+
+        Product product = new Product();
+        product.setId(productId);
+
+        Order order = new Order();
+        order.setId(orderId);
+
+        OrderItemRequest orderItemRequest = new OrderItemRequest(productId, quantity);
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> orderItemService.addItem(orderId, orderItemRequest));
+
+        assertEquals("Quantidade deve ser maior que zero", exception.getMessage());
     }
 
     @Test

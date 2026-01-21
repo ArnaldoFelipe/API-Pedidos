@@ -34,6 +34,10 @@ public class OrderItemService {
             throw new IllegalArgumentException("Pedido inválido");
         }
 
+        if (orderItemRequest.quantity() <= 0) {
+            throw new IllegalArgumentException("Quantidade deve ser maior que zero");
+        }
+
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado"));
 
