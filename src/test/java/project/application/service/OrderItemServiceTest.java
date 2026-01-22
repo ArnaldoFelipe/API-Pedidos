@@ -119,4 +119,31 @@ public class OrderItemServiceTest {
         assertNotNull(orderItemResponse);
         assertEquals(0, order.getItems().size());
     }
+
+    @Test
+    void erroAoDeletarItemQueNaoPertenceAoPedido(){
+
+        Long orderId = 1L;
+        Long itemId = 1L;
+
+        Order order = new Order();
+        order.setId(orderId);
+
+        OrderItem orderItem = new OrderItem();
+        orderItem.setId(itemId);
+
+        Product product = new Product();
+        product.setId(10L);
+        product.setName("Produto teste");
+
+        orderItem.setProduct(product);
+        orderItem.setQuantity(10);
+        orderItem.setPrice(BigDecimal.valueOf(20));
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> orderItemService.removeItem(orderId, itemId));
+
+        assertEquals("Pedido não encontrado", exception.getMessage());
+    }
 }
