@@ -1,4 +1,4 @@
-package project.application.service;
+package project.application.unitTests.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
