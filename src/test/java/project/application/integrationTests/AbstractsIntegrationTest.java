@@ -1,27 +1,37 @@
 package project.application.integrationTests;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
+import org.springframework.test.context.DynamicPropertySource; 
+import org.testcontainers.containers.MySQLContainer; 
+import org.testcontainers.junit.jupiter.Container; 
 import org.testcontainers.junit.jupiter.Testcontainers;
-import static io.restassured.RestAssured.given;
+
+import io.restassured.RestAssured;
+
+import static io.restassured.RestAssured.*; 
 import static org.hamcrest.Matchers.equalTo;
 
-
+@ActiveProfiles("test")
 @Testcontainers
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT) 
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ImportAutoConfiguration(exclude = FlywayAutoConfiguration.class)
+@EntityScan(basePackages = "project.application.entities") 
 public class AbstractsIntegrationTest {
 
-    @SuppressWarnings("resource")
     @Container
-    static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.1")
+    static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0.32")
             .withDatabaseName("testdb")
-            .withUsername("user")
-            .withPassword("password");
+            .withUsername("test")
+            .withPassword("test");
+            
 
     @DynamicPropertySource
     static void configurationDataSource(DynamicPropertyRegistry registry){
@@ -33,17 +43,28 @@ public class AbstractsIntegrationTest {
     @LocalServerPort
     int port;
 
+    @BeforeEach
+    void setup() {
+        RestAssured.baseURI = "http://localhost";
+        RestAssured.port = port;
+    }
+
     @Test
     void deveSalvarUsuario(){
 
         given()
             .contentType("application/json")
-            .body("{\"name\": \"Maria\", \"email\": \"maria@email.com\"}")
-            .when()
-                .post("/customers")
-            .then()
-                .statusCode(201)
-                .body("name", equalTo("maria"))
-                .body("email", equalTo("maria@email.com"));
+            .body("""
+                {
+                  "name": "Maria",
+                  "email": "maria@email.com"
+                }
+            """)
+        .when()
+            .post("/customers")
+        .then()
+            .statusCode(201)
+            .body("name", equalTo("Maria"))
+            .body("email", equalTo("maria@email.com"));
     }
 }
